@@ -35,7 +35,7 @@ class BannerItem(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=50, help_text='分类名称')
-    topic_img = models.ForeignKey('Image', db_constraint=False, blank=True, null=True, help_text='外键，关联image表')
+    topic_img = models.OneToOneField('Image', db_constraint=False, blank=True, null=True, help_text='外键，关联image表')
     delete_time = models.IntegerField(blank=True, null=True, help_text='删除时间')
     description = models.CharField(max_length=100, blank=True, null=True, help_text='描述')
     update_time = models.IntegerField(blank=True, null=True, help_text='更新时间')
@@ -118,7 +118,7 @@ class Product(models.Model):
     create_time = models.IntegerField(blank=True, null=True, help_text='创建时间')
     update_time = models.IntegerField(blank=True, null=True, help_text='更新时间')
     summary = models.CharField(max_length=50, blank=True, null=True, help_text='摘要')
-    img = models.ForeignKey('Image', db_constraint=False, blank=True, null=True, help_text='图片外键')
+    img = models.OneToOneField('Image', db_constraint=False, blank=True, null=True, help_text='图片外键')
 
     class Meta:
         db_table = 'product'
@@ -127,10 +127,10 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    img = models.ForeignKey('Image', db_constraint=False, help_text='图片外键')
+    img = models.OneToOneField('Image', db_constraint=False, help_text='图片外键')
     delete_time = models.IntegerField(blank=True, null=True, help_text='删除时间')
     order = models.IntegerField(help_text='图片排序序号')
-    product = models.ForeignKey('Product', db_constraint=False, help_text='商品外键')
+    product = models.ForeignKey('Product', related_name='images', db_constraint=False, help_text='商品外键')
 
     class Meta:
         db_table = 'product_image'
@@ -141,7 +141,7 @@ class ProductImage(models.Model):
 class ProductProperty(models.Model):
     name = models.CharField(max_length=30, blank=True, null=True, help_text='详情属性名称')
     detail = models.CharField(max_length=255, help_text='详情属性')
-    product = models.ForeignKey('Product', db_constraint=False, help_text='商品外键')
+    product = models.ForeignKey('Product', related_name='properties', db_constraint=False, help_text='商品外键')
     delete_time = models.IntegerField(blank=True, null=True, help_text='删除时间')
     update_time = models.IntegerField(blank=True, null=True, help_text='更新时间')
 
@@ -160,7 +160,7 @@ class Theme(models.Model):
     head_img = models.OneToOneField('Image', related_name='head', db_constraint=False, blank=True, null=True,
                                     help_text='图片外键')
     update_time = models.IntegerField(blank=True, null=True)
-    products = models.ManyToManyField('Product', db_constraint=False, related_name='products', help_text='商品，多对多关系')
+    product = models.ManyToManyField('Product', db_constraint=False, related_name='products', help_text='商品，多对多关系')
 
     class Meta:
         db_table = 'theme'
@@ -180,27 +180,28 @@ class ThirdApp(models.Model):
 
 
 class User(models.Model):
-    openid = models.CharField(unique=True, max_length=50)
-    nickname = models.CharField(max_length=50, blank=True, null=True)
+    openid = models.CharField(unique=True, max_length=50, help_text='wechat openid')
+    nickname = models.CharField(max_length=50, blank=True, null=True, help_text='昵称')
     extend = models.CharField(max_length=255, blank=True, null=True)
-    delete_time = models.IntegerField(blank=True, null=True)
-    create_time = models.IntegerField(blank=True, null=True)
-    update_time = models.IntegerField(blank=True, null=True)
+    delete_time = models.IntegerField(blank=True, null=True, help_text='删除时间')
+    create_time = models.IntegerField(blank=True, null=True, help_text='创建时间')
+    update_time = models.IntegerField(blank=True, null=True, help_text='更新时间')
 
     class Meta:
         db_table = 'user'
 
 
 class UserAddress(models.Model):
-    name = models.CharField(max_length=30)
-    mobile = models.CharField(max_length=20)
-    province = models.CharField(max_length=20, blank=True, null=True)
-    city = models.CharField(max_length=20, blank=True, null=True)
-    country = models.CharField(max_length=20, blank=True, null=True)
-    detail = models.CharField(max_length=100, blank=True, null=True)
-    delete_time = models.IntegerField(blank=True, null=True)
-    user_id = models.IntegerField(unique=True)
-    update_time = models.IntegerField(blank=True, null=True)
+    name = models.CharField(max_length=30, help_text='姓名')
+    mobile = models.CharField(max_length=20, help_text='手机号')
+    province = models.CharField(max_length=20, blank=True, null=True, help_text='省')
+    city = models.CharField(max_length=20, blank=True, null=True, help_text='城市')
+    country = models.CharField(max_length=20, blank=True, null=True, help_text='国家')
+    detail = models.CharField(max_length=100, blank=True, null=True, help_text='详情')
+    delete_time = models.IntegerField(blank=True, null=True, help_text='删除时间')
+    user = models.OneToOneField('User', related_name='address', db_constraint=False, blank=True, null=True,
+                                help_text='用户')
+    update_time = models.IntegerField(blank=True, null=True, help_text='更新时间')
 
     class Meta:
         db_table = 'user_address'

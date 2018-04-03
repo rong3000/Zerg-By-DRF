@@ -29,10 +29,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
@@ -51,6 +49,7 @@ REST_FRAMEWORK = {
     ],
     'EXCEPTION_HANDLER': 'api.handle.exception_handler'
 }
+
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -165,3 +164,17 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+WECHAT_APPLETS = {
+    'AppID': 'wx251a06917ad81304',
+    'AppSecret': 'd9f3eb480c17ac01d6634a03ae3d11f3',
+    'LoginURL': 'https://api.weixin.qq.com/sns/jscode2session'
+}
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}

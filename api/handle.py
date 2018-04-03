@@ -1,14 +1,12 @@
 from __future__ import unicode_literals
 
+import six
 from django.utils.translation import ugettext_lazy as _
 
 from django.http import Http404
-from rest_framework.exceptions import *
-from rest_framework import exceptions
+from api.exceptions import *
 from rest_framework.compat import set_rollback
 from rest_framework.response import Response
-
-from api.models import Banner
 
 
 def exception_handler(exc, context):
@@ -22,18 +20,8 @@ def exception_handler(exc, context):
     to be raised.
     """
     request_url = context['request'].build_absolute_uri()
-    if isinstance(exc, ParseError):
-        msg = exc.detail
-        data = {
-            'msg': msg,
-            'code': exc.status_code,
-            'error_code': 40000,
-            'request_url': request_url
-        }
-        set_rollback()
-        return Response(data, status=exc.status_code)
 
-    elif isinstance(exc, exceptions.APIException):
+    if isinstance(exc, APIException):
         headers = {}
         if getattr(exc, 'auth_header', None):
             headers['WWW-Authenticate'] = exc.auth_header
@@ -43,7 +31,12 @@ def exception_handler(exc, context):
         if isinstance(exc.detail, (list, dict)):
             data = exc.detail
         else:
-            data = {'msg': exc.detail}
+            data = {
+                'msg': exc.detail,
+                'code': exc.code,
+                'error_code': exc.error_code,
+                'request_url': request_url
+            }
 
         set_rollback()
         return Response(data, status=exc.status_code, headers=headers)
@@ -59,20 +52,15 @@ def exception_handler(exc, context):
         set_rollback()
         return Response(data, status=status.HTTP_404_NOT_FOUND)
 
-    elif isinstance(exc, PermissionDenied):
-        msg = _('Permission denied.')
-        data = {'msg': six.text_type(msg)}
+    # else:
+    #     msg = '服务器内部错误, 不想告诉你'
+    #     data = {
+    #         'msg': msg,
+    #         'error_code': 999,
+    #         'code': 500,
+    #         'request_url': request_url
+    #     }
+    #     set_rollback()
+    #     return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        set_rollback()
-        return Response(data, status=status.HTTP_403_FORBIDDEN)
 
-    else:
-        msg = _('Internal server error')
-        data = {
-            'msg': msg,
-            'error_code': 999,
-            'request_url': request_url
-        }
-
-        set_rollback()
-        return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
